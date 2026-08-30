@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-antigravity}
+      POSTGRES_USER: ${POSTGRES_USER:-antigravity}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+  
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-antigravity}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-antigravity}
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env}
+      API_KEY: ${API_KEY}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173}
+      RATE_LIMIT_AI: ${RATE_LIMIT_AI:-10}
+      RATE_LIMIT_GENERAL: ${RATE_LIMIT_GENERAL:-30}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+  
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+  
+  worker:
+    build: ./backend
+    command: celery -A tasks worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-antigravity}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-antigravity}
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+
+volumes:
+  postgres_data:
+  redis_data:
