@@ -1,0 +1,20 @@
+<svg width="120" height="120" viewBox="10 15 90 90" fill="none"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Bottom layer -->
+  <rect x="25" y="65" width="70" height="18" rx="6"
+        fill="#1A1D23" stroke="#3A3F4B" stroke-width="2"/>
+
+  <!-- Middle layer -->
+  <rect x="20" y="45" width="70" height="18" rx="6"
+        fill="#13161C" stroke="#3A3F4B" stroke-width="2"/>
+
+  <!-- Top layer -->
+  <rect x="15" y="25" width="70" height="18" rx="6"
+        fill="#0F1115" stroke="#3A3F4B" stroke-width="2"/>
+
+  <!-- Lightning bolt (muted grey) -->
+  <path d="M70 28 L55 58 H68 L52 92 L82 52 H68 Z"
+        fill="#A1A1AA"/>
+
+</svg>
