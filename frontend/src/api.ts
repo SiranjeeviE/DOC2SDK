@@ -14,7 +14,7 @@ import type {
 
 export type { DiffResult, SpecChange };
 
-let baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+let baseUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api');
 if (baseUrl.endsWith('/')) {
     baseUrl = baseUrl.slice(0, -1);
 }
