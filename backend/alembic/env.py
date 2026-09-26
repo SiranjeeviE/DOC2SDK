@@ -28,14 +28,18 @@ target_metadata = Base.metadata
 env_db_url = os.environ.get("DATABASE_URL")
 if env_db_url:
     if env_db_url.startswith("postgres://"):
-        env_db_url = env_db_url.replace("postgres://", "postgresql://", 1)
+        env_db_url = env_db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    elif env_db_url.startswith("postgresql://"):
+        env_db_url = env_db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
     config.set_main_option("sqlalchemy.url", env_db_url)
 elif not config.get_main_option("sqlalchemy.url") or "driver://" in config.get_main_option("sqlalchemy.url"):
     config.set_main_option("sqlalchemy.url", "sqlite:///./antigravity.db")
 else:
     current_url = config.get_main_option("sqlalchemy.url")
     if current_url.startswith("postgres://"):
-        config.set_main_option("sqlalchemy.url", current_url.replace("postgres://", "postgresql://", 1))
+        config.set_main_option("sqlalchemy.url", current_url.replace("postgres://", "postgresql+psycopg2://", 1))
+    elif current_url.startswith("postgresql://"):
+        config.set_main_option("sqlalchemy.url", current_url.replace("postgresql://", "postgresql+psycopg2://", 1))
 
 
 def run_migrations_offline() -> None:

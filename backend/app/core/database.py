@@ -7,11 +7,13 @@ logger = logging.getLogger(__name__)
 
 def normalize_database_url(url: str) -> str:
     """
-    Normalizes database URLs, replacing legacy postgres:// with postgresql://
-    for SQLAlchemy 1.4+ compatibility.
+    Normalizes database URLs, replacing legacy postgres:// with postgresql+psycopg2://
+    for explicit SQLAlchemy driver compatibility.
     """
     if url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql://", 1)
+        return url.replace("postgres://", "postgresql+psycopg2://", 1)
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg2://", 1)
     return url
 
 DATABASE_URL = normalize_database_url(
