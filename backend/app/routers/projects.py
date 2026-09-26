@@ -107,6 +107,26 @@ async def process_project_background(project_id: UUID, source_url: str):
         db.close()
 
 
+async def generate_sdk_background(api_spec_id: UUID, spec_dict: dict, version: int):
+    db = SessionLocal()
+    try:
+        from ..parsers.openapi import NormalizedAPISpec
+        spec = NormalizedAPISpec(**spec_dict)
+        sdk_code, test_code = pipeline_service.generate_sdk_and_tests(spec, "python")
+        ProjectRepository.create_sdk(
+            db=db,
+            api_spec_id=api_spec_id,
+            version=version,
+            language="python",
+            sdk_code=sdk_code,
+            test_code=test_code,
+        )
+    except Exception as e:
+        logger.exception("Background SDK generation failed: %s", e)
+    finally:
+        db.close()
+
+
 @router.post("", response_model=schemas.domain.ProjectResponse)
 async def create_project(
     request: ProjectCreateRequest,
@@ -335,6 +355,7 @@ def get_project_sdks(id: UUID, db: Session = Depends(get_db)):
 
 @router.post("/upload", response_model=schemas.domain.ProjectResponse)
 async def upload_project(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     name: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
@@ -358,15 +379,7 @@ async def upload_project(
     project = ProjectRepository.create_project(db=db, name=project_name, description=project_desc)
     api_spec = ProjectRepository.create_spec(db=db, project_id=project.id, version=1, spec_data=spec_dict)
 
-    sdk_code, test_code = pipeline_service.generate_sdk_and_tests(spec, "python")
-    ProjectRepository.create_sdk(
-        db=db,
-        api_spec_id=api_spec.id,
-        version=1,
-        language="python",
-        sdk_code=sdk_code,
-        test_code=test_code,
-    )
+    background_tasks.add_task(generate_sdk_background, api_spec.id, spec_dict, 1)
 
     db.refresh(project)
     return project
@@ -375,6 +388,7 @@ async def upload_project(
 @router.post("/{id}/upload-spec", response_model=schemas.domain.ApiSpecResponse)
 async def upload_project_spec(
     id: UUID,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     _auth: bool = Depends(require_auth),
@@ -404,15 +418,7 @@ async def upload_project_spec(
         spec_data=spec_dict,
     )
 
-    sdk_code, test_code = pipeline_service.generate_sdk_and_tests(spec, "python")
-    ProjectRepository.create_sdk(
-        db=db,
-        api_spec_id=api_spec.id,
-        version=next_version,
-        language="python",
-        sdk_code=sdk_code,
-        test_code=test_code,
-    )
+    background_tasks.add_task(generate_sdk_background, api_spec.id, spec_dict, next_version)
 
     return api_spec
 
