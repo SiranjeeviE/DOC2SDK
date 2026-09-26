@@ -1,12 +1,15 @@
 {
+    "buildCommand": "cd frontend && npm install && npm run build",
+    "outputDirectory": "frontend/dist",
+    "framework": "vite",
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "/api/index.py"
+            "destination": "https://doc2sdk-backend.onrender.com/api/$1"
         },
         {
             "source": "/(.*)",
-            "destination": "/frontend/dist/$1"
+            "destination": "/$1"
         }
     ]
 }
