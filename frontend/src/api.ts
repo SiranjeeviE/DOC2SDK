@@ -103,17 +103,13 @@ export const projectApi = {
         formData.append('file', file);
         if (name) formData.append('name', name);
         if (description) formData.append('description', description);
-        const response = await api.post<Project>('/projects/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const response = await api.post<Project>('/projects/upload', formData);
         return response.data;
     },
     uploadSpec: async (id: string, file: File): Promise<SpecVersionItem> => {
         const formData = new FormData();
         formData.append('file', file);
-        const response = await api.post<SpecVersionItem>(`/projects/${id}/upload-spec`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const response = await api.post<SpecVersionItem>(`/projects/${id}/upload-spec`, formData);
         return response.data;
     },
     getSpecs: async (id: string): Promise<SpecVersionItem[]> => {
