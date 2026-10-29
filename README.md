@@ -91,7 +91,3 @@ docker-compose up --build
 - `backend/app/routers/`: FastAPI endpoints (`projects.py`, `playground.py`, `unified.py`, `auth.py`).
 - `backend/tasks.py`: Celery background tasks for async monitoring and scraping.
 - `frontend/src/`: React UI, Workspace dashboard, API Change Monitor, and test explorer.
-
-## 📄 License
-
-MIT
